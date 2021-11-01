@@ -95,7 +95,6 @@ class Naca4Digit:
         """ Employ vortex panel method to calculate lift, pressure, circulation etc. """
         m = len(xb) - 1
         mp1 = m + 1
-
         x = np.zeros((m, 1))
         y = np.zeros((m, 1))
         s = np.zeros((m, 1))
