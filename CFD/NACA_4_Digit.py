@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-
 import numpy as np
 import math
 
+""" Homegrown vortex panel implementation & visualization """
 
 class Naca4Digit:
     """ A class to represent a NACA 4-digit airfoil """

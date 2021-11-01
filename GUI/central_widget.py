@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QSlider, QPlainTextEdit
 from PyQt5.QtGui import QFont
 
+from PyQt5.QtCore import Qt
+
 from GUI.mpl_canvas import MplCanvas
 from CFD.NACA_4_Digit import Naca4Digit
 
