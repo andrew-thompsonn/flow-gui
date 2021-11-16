@@ -14,8 +14,6 @@ class MainWindow(QMainWindow):
         menuBar = self.menuBar()
         menuBar.setStyleSheet("background-color:rgb(60, 60, 60);")
 
-        fileMenu = menuBar.addMenu("Fuck")
-        loadAction = fileMenu.addAction("You")
 
         centralWidget = CentralWidget()
         self.setCentralWidget(centralWidget)

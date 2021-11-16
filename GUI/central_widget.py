@@ -162,8 +162,6 @@ class CentralWidget(QWidget):
         self.coefficientOfLiftLabel.setFont(QFont("mono", 10))
         self.coefficientOfLiftLabel.setStyleSheet("color:White;")
 
-
-
         self.commandWindow = QPlainTextEdit()
         self.commandWindow.setStyleSheet("background-color:rgb(60, 60, 60);")
         self.commandWindow.setFixedSize(640, 250)
@@ -204,16 +202,10 @@ class CentralWidget(QWidget):
         statisticsLayout.addWidget(self.coefficientOfLiftLabel)
 
         secondaryCanvasLayout.addWidget(self.secondaryCanvas)
-        # commandWindowLayout.addWidget(self.commandWindow)
 
         leftMainLayout.addLayout(figureLayout)
         leftMainLayout.addLayout(parametersLayout)
-        # rightMainLayout.addWidget(self.secondaryCanvas)
         rightMainLayout.addLayout(secondaryCanvasLayout)
-        # rightMainLayout.addLayout(commandWindowLayout)
-        rightMainLayout.addLayout(statisticsLayout)
-        # mainLayout.addLayout(figureLayout)
-        # mainLayout.addLayout(parametersLayout)
 
         mainLayout.addLayout(leftMainLayout)
         mainLayout.addLayout(rightMainLayout)
