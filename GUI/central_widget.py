@@ -62,6 +62,9 @@ class CentralWidget(QWidget):
         velocitySliderLayout = QVBoxLayout()
         velocitySliderLayout.setContentsMargins(25, 15, 40, 15)
 
+        altitudeSliderLayout = QVBoxLayout()
+        altitudeSliderLayout.setContentsMargins(25, 15, 40, 15)
+
         commandWindowLayout = QHBoxLayout()
         commandWindowLayout.setContentsMargins(20, 0, 25, 25)  # FIXME: No effect
 
@@ -108,6 +111,15 @@ class CentralWidget(QWidget):
         self.velocitySliderLabel.setAlignment(Qt.AlignCenter)
         self.velocitySliderLabel.setFont(QFont("Serif", 10))
         self.velocitySliderLabel.setStyleSheet("color:white;")
+
+        altitudeSlider = QSlider(Qt.Horizontal)
+        altitudeSlider.setMinimum(100)
+        altitudeSlider.setMaximum(10000)
+        altitudeSlider.setTickInterval(100)
+        self.altitudeSliderLabel = QLabel("Altitude [m]")
+        self.altitudeSliderLabel.setAlignment(Qt.AlignCenter)
+        self.altitudeSliderLabel.setFont(QFont("Serif", 10))
+        self.altitudeSliderLabel.setStyleSheet("color:white;")
 
         # Combo box for camber value & label
         camberValues = np.linspace(0, 100, 101)
@@ -192,9 +204,12 @@ class CentralWidget(QWidget):
         alphaSliderLayout.addWidget(self.alphaSliderLabel)
         velocitySliderLayout.addWidget(velocitySlider)
         velocitySliderLayout.addWidget(self.velocitySliderLabel)
+        altitudeSliderLayout.addWidget(altitudeSlider)
+        altitudeSliderLayout.addWidget(self.altitudeSliderLabel)
 
         sliderLayout.addLayout(alphaSliderLayout)
         sliderLayout.addLayout(velocitySliderLayout)
+        sliderLayout.addLayout(altitudeSliderLayout)
 
         parametersLayout.addLayout(airfoilOptionsLayout)
         parametersLayout.addLayout(sliderLayout)
@@ -206,6 +221,7 @@ class CentralWidget(QWidget):
         leftMainLayout.addLayout(figureLayout)
         leftMainLayout.addLayout(parametersLayout)
         rightMainLayout.addLayout(secondaryCanvasLayout)
+        rightMainLayout.addLayout(statisticsLayout)
 
         mainLayout.addLayout(leftMainLayout)
         mainLayout.addLayout(rightMainLayout)
@@ -214,6 +230,7 @@ class CentralWidget(QWidget):
         #-----------------------------------------------------------------------
         alphaSlider.valueChanged.connect(self.alphaChanged)
         velocitySlider.valueChanged.connect(self.velocityChanged)
+        altitudeSlider.valueChanged.connect(self.altitudeChanged)
         plotButton.clicked.connect(self.setAirfoil)
         plotStreamButton.clicked.connect(self.plotStreamLines)
 
@@ -267,6 +284,8 @@ class CentralWidget(QWidget):
         """ Plot airfoil stream function """
         self.airfoil.plotAirfoil(self.secondaryCanvas)
         coefficientOfLift = self.airfoil.plotStream(self.secondaryCanvas)
+        coefficientOfLift = round(coefficientOfLift[0], 3)
+        self.coefficientOfLiftLabel.setText(f"Sectional Lift Coefficient: {coefficientOfLift}")
         self.secondaryCanvas.draw()
         self.streamActive = True
 
@@ -275,3 +294,7 @@ class CentralWidget(QWidget):
         self.primaryCanvas.axes.cla()
         self.airfoil.plotAirfoil(self.primaryCanvas)
         self.primaryCanvas.draw()
+
+    def altitudeChanged(self, value):
+        self.altitudeSliderLabel.setText(f"Altitude: {value} [m]")
+        pass
