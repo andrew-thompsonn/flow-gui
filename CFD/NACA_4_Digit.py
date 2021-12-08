@@ -226,11 +226,15 @@ class Naca4Digit:
     def plotAirfoil(self, canvas, grid=True):
         """ Plot an airfoil """
         camberLine = [self.computeCamber(xStep) for xStep in np.linspace(0, self.chord, 40)]
+        chordLine = np.linspace(0, self.chord, 40)
+
         canvas.axes.clear()
         canvas.axes.set_xlim((-2 * self.chord, 2 * self.chord))
         canvas.axes.fill(self.xPts, self.yPts, color='gray')
-        canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5)
-        canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red')
+        canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5, label="Airfoil Border")
+        canvas.axes.plot(chordLine, np.linspace(0, 0, 40), color='orange', label="Chord")
+        canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red', label="Mean Thickness")
+        canvas.axes.legend()
         if grid: canvas.axes.grid(True, color='gray', linestyle='-.')
         canvas.axes.axis('equal')
         canvas.axes.set_title(self.name, color='white')

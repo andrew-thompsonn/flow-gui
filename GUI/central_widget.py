@@ -22,12 +22,14 @@ class CentralWidget(QWidget):
         # Airfoil Parameter
         self.m = 0
         self.p = 0
-        self.c = 0
-        self.t = 0
+        self.c = 1 
+        self.t = 12 
 
         # Default airfoil (NACA 0012)
         self.airfoil = Naca4Digit(0, 0, 0.12, 1, 70)
         self.showFigure()
+
+        self.N = 100 
 
         # Status
         self.streamActive = False
@@ -61,29 +63,23 @@ class CentralWidget(QWidget):
 
         # AoA slider
         alphaSliderLayout = QVBoxLayout()
-        alphaSliderLayout.setContentsMargins(25, 15, 40, 15)
+        alphaSliderLayout.setContentsMargins(25, 15, 40, 0)
 
         # Velocity slider
         velocitySliderLayout = QVBoxLayout()
-        velocitySliderLayout.setContentsMargins(25, 15, 40, 15)
-
-        altitudeSliderLayout = QVBoxLayout()
-        altitudeSliderLayout.setContentsMargins(25, 15, 40, 15)
-
-        commandWindowLayout = QHBoxLayout()
-        commandWindowLayout.setContentsMargins(20, 0, 25, 25)  # FIXME: No effect
+        velocitySliderLayout.setContentsMargins(25, 0, 40, 0)
 
         statisticsLayout = QVBoxLayout()
-        statisticsLayout.setContentsMargins(20, 0, 25, 25)
+        statisticsLayout.setContentsMargins(20, 0, 25, 45)
 
         secondaryCanvasLayout = QHBoxLayout()
-        secondaryCanvasLayout.setContentsMargins(0, 25, 40, 0)
+        secondaryCanvasLayout.setContentsMargins(30, 25, 40, 0)
 
         tertiaryCanvasLayout = QHBoxLayout()
-        tertiaryCanvasLayout.setContentsMargins(20, 0, 40, 0)
+        tertiaryCanvasLayout.setContentsMargins(40, 0, 40, 0)
 
         airfoilOptionsLayout = QVBoxLayout()
-        airfoilOptionsLayout.setContentsMargins(40, 15, 65, 100)
+        airfoilOptionsLayout.setContentsMargins(30, 15, 40, 100)
 
         camberLayout = QHBoxLayout()
         camberLocationLayout = QHBoxLayout()
@@ -172,9 +168,21 @@ class CentralWidget(QWidget):
         analyzeButton = QPushButton("Run Analysis")
         analyzeButton.setStyleSheet("color:White; background-color:rgb(25, 25, 25)")
 
-        self.coefficientOfLiftLabel = QLabel("Sectional Lift Coefficient:  ")
+        self.summaryLabel = QLabel(f"Summary: {self.airfoil.name}\n")
+        self.summaryLabel.setFont(QFont("mono", 10))
+        self.summaryLabel.setStyleSheet("color:white;")
+
+        self.coefficientOfLiftLabel = QLabel("\tSectional Lift Coefficient:  ")
         self.coefficientOfLiftLabel.setFont(QFont("mono", 10))
         self.coefficientOfLiftLabel.setStyleSheet("color:White;")
+
+        self.angleOfAttackLabel = QLabel("\tAngle of Attack:  ")
+        self.angleOfAttackLabel.setFont(QFont("mono", 10))
+        self.angleOfAttackLabel.setStyleSheet("color: white;")
+        
+        self.airVelocityLabel = QLabel("\tRelative Air Velocity:  ")
+        self.airVelocityLabel.setFont(QFont("mono", 10))
+        self.airVelocityLabel.setStyleSheet("color:White;")
 
         self.commandWindow = QPlainTextEdit()
         self.commandWindow.setStyleSheet("background-color:rgb(60, 60, 60);")
@@ -203,6 +211,11 @@ class CentralWidget(QWidget):
         airfoilOptionsLayout.addWidget(analyzeButton)
         airfoilOptionsLayout.addWidget(clearButton)
 
+        statisticsLayout.addWidget(self.summaryLabel) 
+        statisticsLayout.addWidget(self.coefficientOfLiftLabel)
+        statisticsLayout.addWidget(self.angleOfAttackLabel)
+        statisticsLayout.addWidget(self.airVelocityLabel)
+
         alphaSliderLayout.addWidget(alphaSlider)
         alphaSliderLayout.addWidget(self.alphaSliderLabel)
         velocitySliderLayout.addWidget(velocitySlider)
@@ -210,12 +223,11 @@ class CentralWidget(QWidget):
 
         sliderLayout.addLayout(alphaSliderLayout)
         sliderLayout.addLayout(velocitySliderLayout)
-        sliderLayout.addLayout(altitudeSliderLayout)
+        sliderLayout.addLayout(statisticsLayout)
 
         parametersLayout.addLayout(airfoilOptionsLayout)
         parametersLayout.addLayout(sliderLayout)
 
-        statisticsLayout.addWidget(self.coefficientOfLiftLabel)
 
         secondaryCanvasLayout.addWidget(self.secondaryCanvas)
         tertiaryCanvasLayout.addWidget(self.tertiaryCanvas)
@@ -224,7 +236,6 @@ class CentralWidget(QWidget):
         leftMainLayout.addLayout(parametersLayout)
         rightMainLayout.addLayout(figureLayout)
         rightMainLayout.addLayout(tertiaryCanvasLayout)
-        # rightMainLayout.addLayout(statisticsLayout)
 
         mainLayout.addLayout(leftMainLayout)
         mainLayout.addLayout(rightMainLayout)
@@ -283,7 +294,7 @@ class CentralWidget(QWidget):
 
     def setAirfoil(self):
         """ Create airfoil """
-        self.airfoil = Naca4Digit(self.m, self.p, self.t, self.c, 70)
+        self.airfoil = Naca4Digit(self.m, self.p, self.t, self.c, self.N)
         self.showAirfoil()
 
     def plotStreamLines(self):
@@ -293,24 +304,27 @@ class CentralWidget(QWidget):
         coefficientOfLift, cp = self.airfoil.plotStream(self.secondaryCanvas, pressurePlot=True)
         coefficientOfLift = round(coefficientOfLift[0], 3)
 
-        # indices = np.where(self.airfoil.yPts < 0)
-        # indices = indices[list(np.where(indices != len(cp)))]
-
-
-        # self.tertiaryCanvas.axes.plot(self.airfoil.xPts[indices], cp[indices[:-1]])
-        # self.tertiaryCanvas.axes.plot(self.airfoil.xPts[~indices], cp[~indices])
+        l = len(self.airfoil.xPts)
+        self.tertiaryCanvas.axes.plot(self.airfoil.xPts[:l//2], cp[:l//2], 'b', marker='o', linewidth=3.5, label="Lower Surface")
+        self.tertiaryCanvas.axes.plot(self.airfoil.xPts[l//2:-1], cp[l//2:], 'r', marker='o', linewidth=3.5, label="Upper Surface")
+        self.tertiaryCanvas.axes.legend()
         self.tertiaryCanvas.axes.set_xlim((0, self.airfoil.chord))
         self.tertiaryCanvas.axes.set_ylim((np.min(cp), np.max(cp)))
+        self.tertiaryCanvas.axes.invert_yaxis()
         self.tertiaryCanvas.draw()
 
+        self.summaryLabel.setText(f"Summary: {self.airfoil.name}\n")
+        self.coefficientOfLiftLabel.setText(f"\tSectional Lift Coefficient:\t\t{coefficientOfLift}")
+        self.angleOfAttackLabel.setText(f"\tAngle of Attack:\t\t\t{round(self.airfoil.alpha*180/np.pi)} [deg]")
+        self.airVelocityLabel.setText(f"\tRelative Air Velocity:\t\t{self.airfoil.vInf} [m/s]")
 
-        self.coefficientOfLiftLabel.setText(f"Sectional Lift Coefficient: {coefficientOfLift}")
+
         self.secondaryCanvas.draw()
         self.streamActive = True
 
     def showAirfoil(self):
         """ Plot the shape of the airfoil """
-        self.airfoil.calculateAirfoilBorder(100)
+        self.airfoil.calculateAirfoilBorder(self.N)
         self.airfoil.plotAirfoil(self.primaryCanvas)
         self.primaryCanvas.draw()
 
@@ -332,6 +346,7 @@ class CentralWidget(QWidget):
         self.tertiaryCanvas.axes.tick_params(axis='y', colors='grey')
         self.tertiaryCanvas.axes.grid(True, color='gray', linestyle='-.')
         self.tertiaryCanvas.axes.plot(np.linspace(-5, 10, 25), np.zeros(25,), 'white')
+        self.tertiaryCanvas.axes.set_xlim((-0.05*self.c, self.c*1.05))
         
         self.secondaryCanvas.axes.set_title("Stream Function", color='white')
         self.secondaryCanvas.axes.set_xlabel("X [m]")
