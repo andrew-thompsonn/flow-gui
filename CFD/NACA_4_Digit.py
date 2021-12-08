@@ -172,7 +172,7 @@ class Naca4Digit:
         circulation = vInf*np.multiply(velocity, s)
         pressureCoefficient = 1 - np.multiply(velocity, velocity)
         liftCoefficient = np.sum(2*circulation)/(vInf*chord)
-        return x, y, circulation, liftCoefficient
+        return x, y, circulation, liftCoefficient, pressureCoefficient
 
     @staticmethod
     def computeRadius(xCenter, yCenter, x, y):
@@ -181,7 +181,7 @@ class Naca4Digit:
 
     def computeStreamlines(self):
         """ Compute the stream function for the given airfoil/flow """
-        xPts, yPts, circulations, cl = self.vortexPanel(self.xPts, self.yPts, self.vInf, self.alpha)
+        xPts, yPts, circulations, cl, pressureCoefficient = self.vortexPanel(self.xPts, self.yPts, self.vInf, self.alpha)
         airfoilStream = np.zeros(np.shape(self.gx))
 
         velocityX = np.ones(self.gx.shape)*self.vInf*np.cos(self.alpha)
@@ -202,11 +202,11 @@ class Naca4Digit:
         pressure = 101.3e3 - 0.5*1.225*np.square(totalVelocity)
 
         freeStream = self.gy*self.vInf*np.cos(self.alpha) - self.gx*self.vInf*np.sin(self.alpha)
-        return airfoilStream + freeStream, cl, (pressure)/1000
+        return airfoilStream + freeStream, cl, (pressure)/1000, pressureCoefficient
 
     def plotStream(self, canvas, pressurePlot=False):
         """ Plot the stream lines for the airfoil and flow """
-        airfoilStream, cl, pressure = self.computeStreamlines()
+        airfoilStream, cl, pressure, cp = self.computeStreamlines()
         if pressurePlot:
             if self.cbar: self.cbar.remove()
             maximumPressure = np.max(pressure)
@@ -221,13 +221,13 @@ class Naca4Digit:
         
         canvas.axes.contour(self.gx, self.gy, airfoilStream, levels=np.linspace(np.min(airfoilStream), \
             np.max(airfoilStream), 30), colors=['white', 'white'], linewidths=0.6)
-        return cl
+        return cl, cp
 
     def plotAirfoil(self, canvas, grid=True):
         """ Plot an airfoil """
         camberLine = [self.computeCamber(xStep) for xStep in np.linspace(0, self.chord, 40)]
         canvas.axes.clear()
-        canvas.axes.set_xlim((-10 * self.chord, 2 * self.chord))
+        canvas.axes.set_xlim((-2 * self.chord, 2 * self.chord))
         canvas.axes.fill(self.xPts, self.yPts, color='gray')
         canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5)
         canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red')
@@ -245,6 +245,7 @@ class Naca4Digit:
 
     def plotWashedAirfoil(self, canvas):
 
+        canvas.axes.set_xlim((-2 * self.chord, 2 * self.chord))
         canvas.axes.fill(self.xPts, self.yPts, color='white')
         canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5, color='white')
         canvas.axes.axis('equal')
