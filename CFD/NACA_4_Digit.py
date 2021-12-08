@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from matplotlib import cm
-""" Homegrown vortex panel implementation & visualization """
+
 
 class Naca4Digit:
     """ A class to represent a NACA 4-digit airfoil """
@@ -24,6 +24,7 @@ class Naca4Digit:
 
         self.cbar = None
 
+
     def computeThickness(self, xLocation):
         """ Compute the airfoil thickness at a location on the x axis """
         thickness = (self.thickness / 0.2) * self.chord * (
@@ -31,6 +32,7 @@ class Naca4Digit:
                     - 0.3516 * (xLocation / self.chord) ** 2 + 0.2843 * (xLocation / self.chord) ** 3
                     - 0.1036 * (xLocation / self.chord) ** 4)
         return thickness
+
 
     def computeCamber(self, xLocation):
         """ Compute the airfoil camber at a location on the x axis """
@@ -41,6 +43,7 @@ class Naca4Digit:
             camber = self.maxCamber * ((self.chord - xLocation) / (1 - self.camberLocation) ** 2) * (
                         1 + (xLocation / self.chord) - 2 * self.camberLocation)
         return camber
+
 
     def calculateAirfoilBorder(self, N):
         """ Calculates airfoil x and y values """
@@ -84,13 +87,16 @@ class Naca4Digit:
         self.yPts = y
         return x, y
 
+
     def setVelocity(self, vInfIn):
         """ Set the velocity parameter """
         self.vInf = vInfIn
 
+
     def setAlpha(self, alphaIn):
         """ Set the angle of attack parameter """
         self.alpha = alphaIn
+
 
     @staticmethod
     def vortexPanel(xb, yb, vInf, alpha):
@@ -174,35 +180,42 @@ class Naca4Digit:
         liftCoefficient = np.sum(2*circulation)/(vInf*chord)
         return x, y, circulation, liftCoefficient, pressureCoefficient
 
+
     @staticmethod
     def computeRadius(xCenter, yCenter, x, y):
         """ Compute the radii across the grid for a given (x, y) coordinate """
         return np.sqrt(np.square(x - xCenter) + np.square(y - yCenter))
 
+
     def computeStreamlines(self):
         """ Compute the stream function for the given airfoil/flow """
         xPts, yPts, circulations, cl, pressureCoefficient = self.vortexPanel(self.xPts, self.yPts, self.vInf, self.alpha)
+        
+        # Initialize 2D vectors for velocity in the X/Y directions and stream function
         airfoilStream = np.zeros(np.shape(self.gx))
-
         velocityX = np.ones(self.gx.shape)*self.vInf*np.cos(self.alpha)
         velocityY = np.ones(self.gx.shape)*self.vInf*np.sin(self.alpha)
 
         for index in range(len(circulations)):
+            
+            # Stream function superposition
             radius = self.computeRadius(xPts[index], yPts[index], self.gx, self.gy)
-            # theta = np.atan2(y - yPts[index], x - xPts[index])
-            # FIXME: Removed a negative from this equation...
             vortexStream = (circulations[index]/(2*np.pi))*np.log(radius)
             airfoilStream = airfoilStream + vortexStream
 
+            # Velocity field superposition
             velocityTheta = circulations[index]/(2*np.pi*self.computeRadius(xPts[index], yPts[index], self.gx, self.gy))
             velocityX = velocityX + velocityTheta*np.sin(np.arctan2( (self.gy-yPts[index]), (self.gx-xPts[index]) ))
             velocityY = velocityY + velocityTheta*np.cos(np.arctan2( (self.gy-yPts[index]), (self.gx-xPts[index]) ))
 
+        # Assume sea level atmospheric pressure and density
         totalVelocity = np.sqrt(np.square(velocityX) + np.square(velocityY))
         pressure = 101.3e3 - 0.5*1.225*np.square(totalVelocity)
 
+        # Add free stream effects
         freeStream = self.gy*self.vInf*np.cos(self.alpha) - self.gx*self.vInf*np.sin(self.alpha)
         return airfoilStream + freeStream, cl, (pressure)/1000, pressureCoefficient
+
 
     def plotStream(self, canvas, pressurePlot=False):
         """ Plot the stream lines for the airfoil and flow """
@@ -223,6 +236,7 @@ class Naca4Digit:
             np.max(airfoilStream), 30), colors=['white', 'white'], linewidths=0.6)
         return cl, cp
 
+
     def plotAirfoil(self, canvas, grid=True):
         """ Plot an airfoil """
         camberLine = [self.computeCamber(xStep) for xStep in np.linspace(0, self.chord, 40)]
@@ -233,7 +247,7 @@ class Naca4Digit:
         canvas.axes.fill(self.xPts, self.yPts, color='gray')
         canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5, label="Airfoil Border")
         canvas.axes.plot(chordLine, np.linspace(0, 0, 40), color='orange', label="Chord")
-        canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red', label="Mean Thickness")
+        canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red', label="Mean Camber")
         canvas.axes.legend()
         if grid: canvas.axes.grid(True, color='gray', linestyle='-.')
         canvas.axes.axis('equal')
@@ -248,7 +262,7 @@ class Naca4Digit:
 
 
     def plotWashedAirfoil(self, canvas):
-
+        """ Plot a 'washed' version of the airfoil i.e. all white shape """
         canvas.axes.set_xlim((-2 * self.chord, 2 * self.chord))
         canvas.axes.fill(self.xPts, self.yPts, color='white')
         canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5, color='white')

@@ -36,7 +36,7 @@ class CentralWidget(QWidget):
 
         # Secondary Figure
         self.secondaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
-        self.secondaryCanvas.setFixedSize(780, 440)
+        self.secondaryCanvas.setFixedSize(750, 440)
 
         # Tertiary Figure
         self.tertiaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
@@ -56,7 +56,7 @@ class CentralWidget(QWidget):
 
         # Main figure
         figureLayout = QHBoxLayout()
-        figureLayout.setContentsMargins(30, 25, 0, 15)
+        figureLayout.setContentsMargins(0, 25, 0, 15)
 
         # Sliders
         sliderLayout = QVBoxLayout()
@@ -70,16 +70,16 @@ class CentralWidget(QWidget):
         velocitySliderLayout.setContentsMargins(25, 0, 40, 0)
 
         statisticsLayout = QVBoxLayout()
-        statisticsLayout.setContentsMargins(20, 0, 25, 45)
+        statisticsLayout.setContentsMargins(20, 0, 25, 85)
 
         secondaryCanvasLayout = QHBoxLayout()
         secondaryCanvasLayout.setContentsMargins(30, 25, 40, 0)
 
         tertiaryCanvasLayout = QHBoxLayout()
-        tertiaryCanvasLayout.setContentsMargins(40, 0, 40, 0)
+        tertiaryCanvasLayout.setContentsMargins(35, 0, 30, 0)
 
         airfoilOptionsLayout = QVBoxLayout()
-        airfoilOptionsLayout.setContentsMargins(30, 15, 40, 100)
+        airfoilOptionsLayout.setContentsMargins(33, 15, 40, 100)
 
         camberLayout = QHBoxLayout()
         camberLocationLayout = QHBoxLayout()
@@ -346,7 +346,7 @@ class CentralWidget(QWidget):
         self.tertiaryCanvas.axes.tick_params(axis='y', colors='grey')
         self.tertiaryCanvas.axes.grid(True, color='gray', linestyle='-.')
         self.tertiaryCanvas.axes.plot(np.linspace(-5, 10, 25), np.zeros(25,), 'white')
-        self.tertiaryCanvas.axes.set_xlim((-0.05*self.c, self.c*1.05))
+        self.tertiaryCanvas.axes.set_xlim((-0.01*self.c, self.c*1.1))
         
         self.secondaryCanvas.axes.set_title("Stream Function", color='white')
         self.secondaryCanvas.axes.set_xlabel("X [m]")
