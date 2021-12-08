@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from matplotlib import cm
 """ Homegrown vortex panel implementation & visualization """
 
 class Naca4Digit:
@@ -212,7 +213,7 @@ class Naca4Digit:
             minimumPressure = np.min(pressure)
             gain = 0  #(maximumPressure-minimumPressure)*0.4
             cont = canvas.axes.contourf(self.gx, self.gy, pressure, levels=np.linspace(minimumPressure+gain, \
-                maximumPressure, 40))
+                maximumPressure, 40), cmap=cm.hsv)
             self.cbar = canvas.fig.colorbar(cont)
             self.cbar.set_label("Pressure [kPa]", color="white")
             tickLabels = [text.get_text() for text in self.cbar.ax.get_yticklabels()]
@@ -241,3 +242,14 @@ class Naca4Digit:
         canvas.axes.tick_params(axis='y', colors='grey')
         return canvas
 
+
+    def plotWashedAirfoil(self, canvas):
+
+        canvas.axes.fill(self.xPts, self.yPts, color='white')
+        canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5, color='white')
+        canvas.axes.axis('equal')
+        canvas.axes.set_title(self.name, color='white')
+        canvas.axes.set_xlabel(" ")
+        canvas.axes.set_ylabel(" ")
+        canvas.axes.xaxis.label.set_color('white')
+        canvas.axes.yaxis.label.set_color('white')

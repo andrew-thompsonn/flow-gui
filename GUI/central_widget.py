@@ -230,9 +230,9 @@ class CentralWidget(QWidget):
         secondaryCanvasLayout.addWidget(self.secondaryCanvas)
         tertiaryCanvasLayout.addWidget(self.tertiaryCanvas)
 
-        leftMainLayout.addLayout(figureLayout)
+        leftMainLayout.addLayout(secondaryCanvasLayout)
         leftMainLayout.addLayout(parametersLayout)
-        rightMainLayout.addLayout(secondaryCanvasLayout)
+        rightMainLayout.addLayout(figureLayout)
         rightMainLayout.addLayout(tertiaryCanvasLayout)
         # rightMainLayout.addLayout(statisticsLayout)
 
@@ -299,8 +299,8 @@ class CentralWidget(QWidget):
 
     def plotStreamLines(self):
         """ Plot airfoil stream function """
-        
-        self.airfoil.plotAirfoil(self.secondaryCanvas, grid=False)
+        self.clearFigures() 
+        self.airfoil.plotWashedAirfoil(self.secondaryCanvas)
         coefficientOfLift = self.airfoil.plotStream(self.secondaryCanvas, pressurePlot=True)
         coefficientOfLift = round(coefficientOfLift[0], 3)
         self.tertiaryCanvas.axes.plot(self.airfoil.alpha*180/np.pi, coefficientOfLift, 'ro')
