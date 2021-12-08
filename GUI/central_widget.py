@@ -35,6 +35,10 @@ class CentralWidget(QWidget):
         self.secondaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
         self.secondaryCanvas.setFixedSize(640, 400)
 
+        # Tertiary Figure
+        self.tertiaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
+        self.tertiaryCanvas.setFixedSize(640, 400)
+
         #-----------------------------------------------------------------------
         # LAYOUTS
         #-----------------------------------------------------------------------
@@ -49,7 +53,7 @@ class CentralWidget(QWidget):
 
         # Main figure
         figureLayout = QHBoxLayout()
-        figureLayout.setContentsMargins(30, 40, 30, 15)
+        figureLayout.setContentsMargins(30, 25, 30, 15)
 
         # Sliders
         sliderLayout = QVBoxLayout()
@@ -72,7 +76,10 @@ class CentralWidget(QWidget):
         statisticsLayout.setContentsMargins(20, 0, 25, 25)
 
         secondaryCanvasLayout = QHBoxLayout()
-        secondaryCanvasLayout.setContentsMargins(20, 25, 40, 0)
+        secondaryCanvasLayout.setContentsMargins(20, 0, 40, 0)
+
+        tertiaryCanvasLayout = QHBoxLayout()
+        tertiaryCanvasLayout.setContentsMargins(20, 0, 40, 0)
 
         airfoilOptionsLayout = QVBoxLayout()
         airfoilOptionsLayout.setContentsMargins(40, 15, 65, 100)
@@ -164,11 +171,14 @@ class CentralWidget(QWidget):
         chordLabel.setFont(QFont("serif", 10))
         chordLabel.setStyleSheet("color:white;")
 
-        plotButton = QPushButton("Plot Airfoil")
+        plotButton = QPushButton("Set Airfoil")
         plotButton.setStyleSheet("color:White;")
 
-        plotStreamButton = QPushButton("Plot Streamlines")
-        plotStreamButton.setStyleSheet("color:White;")
+        clearButton = QPushButton("Clear")
+        clearButton.setStyleSheet("color:White;")
+
+        analyzeButton = QPushButton("Run Analysis")
+        analyzeButton.setStyleSheet("color:White;")
 
         self.coefficientOfLiftLabel = QLabel("Sectional Lift Coefficient:  ")
         self.coefficientOfLiftLabel.setFont(QFont("mono", 10))
@@ -198,7 +208,8 @@ class CentralWidget(QWidget):
         airfoilOptionsLayout.addLayout(airfoilThicknessLayout)
         airfoilOptionsLayout.addLayout(chordLayout)
         airfoilOptionsLayout.addWidget(plotButton)
-        airfoilOptionsLayout.addWidget(plotStreamButton)
+        airfoilOptionsLayout.addWidget(analyzeButton)
+        airfoilOptionsLayout.addWidget(clearButton)
 
         alphaSliderLayout.addWidget(alphaSlider)
         alphaSliderLayout.addWidget(self.alphaSliderLabel)
@@ -217,11 +228,13 @@ class CentralWidget(QWidget):
         statisticsLayout.addWidget(self.coefficientOfLiftLabel)
 
         secondaryCanvasLayout.addWidget(self.secondaryCanvas)
+        tertiaryCanvasLayout.addWidget(self.tertiaryCanvas)
 
         leftMainLayout.addLayout(figureLayout)
         leftMainLayout.addLayout(parametersLayout)
         rightMainLayout.addLayout(secondaryCanvasLayout)
-        rightMainLayout.addLayout(statisticsLayout)
+        rightMainLayout.addLayout(tertiaryCanvasLayout)
+        # rightMainLayout.addLayout(statisticsLayout)
 
         mainLayout.addLayout(leftMainLayout)
         mainLayout.addLayout(rightMainLayout)
@@ -232,12 +245,16 @@ class CentralWidget(QWidget):
         velocitySlider.valueChanged.connect(self.velocityChanged)
         altitudeSlider.valueChanged.connect(self.altitudeChanged)
         plotButton.clicked.connect(self.setAirfoil)
-        plotStreamButton.clicked.connect(self.plotStreamLines)
+        analyzeButton.clicked.connect(self.plotStreamLines)
+        # analyzeButton.clicked.connect(self.performFullAnalysis)
 
         camberComboBox.currentIndexChanged.connect(self.setCamber)
         camberLocationComboBox.currentIndexChanged.connect(self.setCamberLocation)
         airfoilThicknessComboBox.currentIndexChanged.connect(self.setThickness)
         chordComboBox.currentIndexChanged.connect(self.setChord)
+        clearButton.clicked.connect(self.clearFigures)
+
+        self.clearFigures()
 
     def alphaChanged(self, value):
         """ Update angle of attack """
@@ -282,19 +299,53 @@ class CentralWidget(QWidget):
 
     def plotStreamLines(self):
         """ Plot airfoil stream function """
-        self.airfoil.plotAirfoil(self.secondaryCanvas)
+        self.airfoil.plotAirfoil(self.secondaryCanvas, grid=False)
         coefficientOfLift = self.airfoil.plotStream(self.secondaryCanvas)
         coefficientOfLift = round(coefficientOfLift[0], 3)
+        self.tertiaryCanvas.axes.plot(self.airfoil.alpha*180/np.pi, coefficientOfLift, 'ro')
+        self.tertiaryCanvas.draw()
         self.coefficientOfLiftLabel.setText(f"Sectional Lift Coefficient: {coefficientOfLift}")
         self.secondaryCanvas.draw()
         self.streamActive = True
 
     def showAirfoil(self):
+        """ Plot the shape of the airfoil """
         self.airfoil.calculateAirfoilBorder(100)
-        self.primaryCanvas.axes.cla()
         self.airfoil.plotAirfoil(self.primaryCanvas)
         self.primaryCanvas.draw()
 
     def altitudeChanged(self, value):
+        """ Change the altitude used in the std atm model """
         self.altitudeSliderLabel.setText(f"Altitude: {value} [m]")
-        pass
+
+    def clearFigures(self):
+        self.primaryCanvas.axes.clear()
+        self.secondaryCanvas.axes.clear()
+        self.tertiaryCanvas.axes.clear()
+
+        self.tertiaryCanvas.axes.set_title("Coefficient of Lift vs Angle of Attack", color='white')
+        self.tertiaryCanvas.axes.set_ylabel("Cl")
+        self.tertiaryCanvas.axes.set_xlabel("Angle of Attack [deg]")
+        self.tertiaryCanvas.axes.xaxis.label.set_color('white')
+        self.tertiaryCanvas.axes.yaxis.label.set_color('white')
+        self.tertiaryCanvas.axes.tick_params(axis='x', colors='grey')
+        self.tertiaryCanvas.axes.tick_params(axis='y', colors='grey')
+        self.tertiaryCanvas.axes.set_xlim((-5, 10))
+        self.tertiaryCanvas.axes.set_ylim((-0.5, 1.5))
+        self.tertiaryCanvas.axes.grid(True, color='gray', linestyle='-.')
+        self.tertiaryCanvas.axes.plot(np.zeros((25,)), np.linspace(-5, 10, 25), 'white')
+        self.tertiaryCanvas.axes.plot(np.linspace(-5, 10, 25), np.zeros(25,), 'white')
+        
+        self.secondaryCanvas.axes.set_title("Stream Function", color='white')
+        self.secondaryCanvas.axes.set_xlabel("X [m]")
+        self.secondaryCanvas.axes.set_ylabel("Y [m]")
+        self.secondaryCanvas.axes.xaxis.label.set_color('white')
+        self.secondaryCanvas.axes.yaxis.label.set_color('white')
+        self.secondaryCanvas.axes.tick_params(axis='x', colors='grey')
+        self.secondaryCanvas.axes.tick_params(axis='y', colors='grey')
+        # self.secondaryCanvas.axes.grid(True, color='gray', linestyle='-.')
+
+        self.airfoil.plotAirfoil(self.primaryCanvas)
+        self.primaryCanvas.draw()
+        self.secondaryCanvas.draw()
+        self.tertiaryCanvas.draw()

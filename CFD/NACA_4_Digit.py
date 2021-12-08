@@ -194,10 +194,11 @@ class Naca4Digit:
     def plotStream(self, canvas):
         """ Plot the stream lines for the airfoil and flow """
         airfoilStream, cl = self.computeStreamlines()
-        canvas.axes.contour(self.gx, self.gy, airfoilStream, 40)
+        canvas.axes.contour(self.gx, self.gy, airfoilStream, levels=np.linspace(np.min(airfoilStream), \
+            np.max(airfoilStream), 30), colors=['white', 'white'], linewidths=0.6)
         return cl
 
-    def plotAirfoil(self, canvas):
+    def plotAirfoil(self, canvas, grid=True):
         """ Plot an airfoil """
         camberLine = [self.computeCamber(xStep) for xStep in np.linspace(0, self.chord, 40)]
         canvas.axes.clear()
@@ -205,7 +206,7 @@ class Naca4Digit:
         canvas.axes.fill(self.xPts, self.yPts, color='gray')
         canvas.axes.plot(self.xPts, self.yPts, linewidth=2.5)
         canvas.axes.plot(np.linspace(0, self.chord, 40), camberLine, color='red')
-        canvas.axes.grid(True, color='gray', linestyle='-.')
+        if grid: canvas.axes.grid(True, color='gray', linestyle='-.')
         canvas.axes.axis('equal')
         canvas.axes.set_title(self.name, color='white')
         canvas.axes.set_xlabel(" ")
