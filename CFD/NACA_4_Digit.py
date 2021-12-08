@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+import matplotlib.pyplot as plt
 """ Homegrown vortex panel implementation & visualization """
 
 class Naca4Digit:
@@ -20,6 +20,8 @@ class Naca4Digit:
 
         self.gx, self.gy = np.meshgrid(np.linspace(-3*self.chord, 2*self.chord, 100),
                                        np.linspace(-1.5*self.chord, 1.5*self.chord, 100))
+
+        self.cbar = None
 
     def computeThickness(self, xLocation):
         """ Compute the airfoil thickness at a location on the x axis """
@@ -174,12 +176,15 @@ class Naca4Digit:
     @staticmethod
     def computeRadius(xCenter, yCenter, x, y):
         """ Compute the radii across the grid for a given (x, y) coordinate """
-        return np.sqrt((x - xCenter) ** 2 + (y - yCenter) ** 2)
+        return np.sqrt(np.square(x - xCenter) + np.square(y - yCenter))
 
     def computeStreamlines(self):
         """ Compute the stream function for the given airfoil/flow """
         xPts, yPts, circulations, cl = self.vortexPanel(self.xPts, self.yPts, self.vInf, self.alpha)
         airfoilStream = np.zeros(np.shape(self.gx))
+
+        velocityX = np.ones(self.gx.shape)*self.vInf*np.cos(self.alpha)
+        velocityY = np.ones(self.gx.shape)*self.vInf*np.sin(self.alpha)
 
         for index in range(len(circulations)):
             radius = self.computeRadius(xPts[index], yPts[index], self.gx, self.gy)
@@ -188,12 +193,31 @@ class Naca4Digit:
             vortexStream = (circulations[index]/(2*np.pi))*np.log(radius)
             airfoilStream = airfoilStream + vortexStream
 
-        freeStream = self.gy*self.vInf*np.cos(self.alpha) - self.gx*self.vInf*np.sin(self.alpha)
-        return airfoilStream + freeStream, cl
+            velocityTheta = circulations[index]/(2*np.pi*self.computeRadius(xPts[index], yPts[index], self.gx, self.gy))
+            velocityX = velocityX + velocityTheta*np.sin(np.arctan2( (self.gy-yPts[index]), (self.gx-xPts[index]) ))
+            velocityY = velocityY + velocityTheta*np.cos(np.arctan2( (self.gy-yPts[index]), (self.gx-xPts[index]) ))
 
-    def plotStream(self, canvas):
+        totalVelocity = np.sqrt(np.square(velocityX) + np.square(velocityY))
+        pressure = 101.3e3 - 0.5*1.225*np.square(totalVelocity)
+
+        freeStream = self.gy*self.vInf*np.cos(self.alpha) - self.gx*self.vInf*np.sin(self.alpha)
+        return airfoilStream + freeStream, cl, (pressure)/1000
+
+    def plotStream(self, canvas, pressurePlot=False):
         """ Plot the stream lines for the airfoil and flow """
-        airfoilStream, cl = self.computeStreamlines()
+        airfoilStream, cl, pressure = self.computeStreamlines()
+        if pressurePlot:
+            if self.cbar: self.cbar.remove()
+            maximumPressure = np.max(pressure)
+            minimumPressure = np.min(pressure)
+            gain = 0  #(maximumPressure-minimumPressure)*0.4
+            cont = canvas.axes.contourf(self.gx, self.gy, pressure, levels=np.linspace(minimumPressure+gain, \
+                maximumPressure, 40))
+            self.cbar = canvas.fig.colorbar(cont)
+            self.cbar.set_label("Pressure [kPa]", color="white")
+            tickLabels = [text.get_text() for text in self.cbar.ax.get_yticklabels()]
+            self.cbar.ax.set_yticklabels(tickLabels, color="white")
+        
         canvas.axes.contour(self.gx, self.gy, airfoilStream, levels=np.linspace(np.min(airfoilStream), \
             np.max(airfoilStream), 30), colors=['white', 'white'], linewidths=0.6)
         return cl

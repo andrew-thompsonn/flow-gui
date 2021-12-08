@@ -8,7 +8,7 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setStyleSheet("background-color: rgb(10, 10, 10);")
+        self.setStyleSheet("background-color: rgb(0, 0, 0);")
         self.setFixedSize(1400, 900)
 
         menuBar = self.menuBar()

@@ -33,7 +33,7 @@ class CentralWidget(QWidget):
 
         # Secondary Figure
         self.secondaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
-        self.secondaryCanvas.setFixedSize(640, 400)
+        self.secondaryCanvas.setFixedSize(750, 400)
 
         # Tertiary Figure
         self.tertiaryCanvas = MplCanvas(self, width=5.5, height=4, dpi=100)
@@ -53,7 +53,7 @@ class CentralWidget(QWidget):
 
         # Main figure
         figureLayout = QHBoxLayout()
-        figureLayout.setContentsMargins(30, 25, 30, 15)
+        figureLayout.setContentsMargins(30, 25, 0, 15)
 
         # Sliders
         sliderLayout = QVBoxLayout()
@@ -76,7 +76,7 @@ class CentralWidget(QWidget):
         statisticsLayout.setContentsMargins(20, 0, 25, 25)
 
         secondaryCanvasLayout = QHBoxLayout()
-        secondaryCanvasLayout.setContentsMargins(20, 0, 40, 0)
+        secondaryCanvasLayout.setContentsMargins(0, 0, 40, 0)
 
         tertiaryCanvasLayout = QHBoxLayout()
         tertiaryCanvasLayout.setContentsMargins(20, 0, 40, 0)
@@ -299,8 +299,9 @@ class CentralWidget(QWidget):
 
     def plotStreamLines(self):
         """ Plot airfoil stream function """
+        
         self.airfoil.plotAirfoil(self.secondaryCanvas, grid=False)
-        coefficientOfLift = self.airfoil.plotStream(self.secondaryCanvas)
+        coefficientOfLift = self.airfoil.plotStream(self.secondaryCanvas, pressurePlot=True)
         coefficientOfLift = round(coefficientOfLift[0], 3)
         self.tertiaryCanvas.axes.plot(self.airfoil.alpha*180/np.pi, coefficientOfLift, 'ro')
         self.tertiaryCanvas.draw()
