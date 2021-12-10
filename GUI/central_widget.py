@@ -313,10 +313,11 @@ class CentralWidget(QWidget):
         self.tertiaryCanvas.axes.invert_yaxis()
         self.tertiaryCanvas.draw()
 
+        print(coefficientOfLift)
         self.summaryLabel.setText(f"Summary: {self.airfoil.name}\n")
-        self.coefficientOfLiftLabel.setText(f"\tSectional Lift Coefficient:\t\t{coefficientOfLift}")
-        self.angleOfAttackLabel.setText(f"\tAngle of Attack:\t\t\t{round(self.airfoil.alpha*180/np.pi)} [deg]")
-        self.airVelocityLabel.setText(f"\tRelative Air Velocity:\t\t{self.airfoil.vInf} [m/s]")
+        self.coefficientOfLiftLabel.setText(f"\tSectional Lift Coefficient: {coefficientOfLift}")
+        self.angleOfAttackLabel.setText(f"\tAngle of Attack: {round(self.airfoil.alpha*180/np.pi)} [deg]")
+        self.airVelocityLabel.setText(f"\tRelative Air Velocity: {self.airfoil.vInf} [m/s]")
 
 
         self.secondaryCanvas.draw()

@@ -101,6 +101,7 @@ class Naca4Digit:
     @staticmethod
     def vortexPanel(xb, yb, vInf, alpha):
         """ Employ vortex panel method to calculate lift, pressure, circulation etc. """
+        """ This method was created by following the Fortran example in Keuthe and Chow's 'Fundamentals of Aerodynamics' """
         m = len(xb) - 1
         mp1 = m + 1
         x = np.zeros((m, 1))
